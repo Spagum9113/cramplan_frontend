@@ -10,6 +10,29 @@ import { Input } from "@/components/ui/input"
 import { ArrowLeft, Upload, FileText, Calendar } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
+// Define types for the quiz data
+interface QuizQuestion {
+  topic: string;
+  quiz_question: string;
+  choice_a: string;
+  choice_b: string;
+  choice_c: string;
+  choice_d: string;
+  correct_answer: string;
+}
+
+interface QuizData {
+  list_quiz_questions: QuizQuestion[];
+}
+
+interface FormattedQuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  topic: string;
+}
+
 export default function UploadPage() {
   const router = useRouter()
   const [courseFiles, setCourseFiles] = useState<File[]>([])
@@ -41,7 +64,101 @@ export default function UploadPage() {
     e.preventDefault()
     setUploading(true)
 
-    // Simulate upload progress
+    // Create request body
+    const requestBody = {
+      subject: "Biology"
+    };
+    
+    // Store the subject and days until exam in localStorage for later use
+    localStorage.setItem('studySubject', requestBody.subject);
+    localStorage.setItem('daysUntilExam', daysUntilExam.toString());
+    
+    // Log request details for debugging
+    console.log('Making POST request to: http://0.0.0.0:8000/generate-topics');
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+    // Make POST request to generate topics
+    fetch('http://0.0.0.0:8000/generate-topics', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Topics generated successfully:', data);
+      
+      // Log the output from generate-topics
+      console.log('Output from generate-topics:', JSON.stringify(data, null, 2));
+      
+      // Call the second endpoint with the output from the first
+      console.log('Making POST request to: http://0.0.0.0:8000/generate-quiz');
+      console.log('Request body:', JSON.stringify(data, null, 2));
+      
+      return fetch('http://0.0.0.0:8000/generate-quiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok for generate-quiz');
+      }
+      return response.json();
+    })
+    .then(quizData => {
+      // Log the output from generate-quiz
+      console.log('Quiz generated successfully:', quizData);
+      console.log('Output from generate-quiz:', JSON.stringify(quizData, null, 2));
+      
+      // Store the quiz data in localStorage for the assessment page to use
+      if (quizData && quizData.list_quiz_questions) {
+        // Transform the quiz data to match the format expected by the assessment page
+        const formattedQuizData = quizData.list_quiz_questions.map((q: QuizQuestion, index: number) => ({
+          id: index + 1,
+          question: q.quiz_question,
+          options: [q.choice_a, q.choice_b, q.choice_c, q.choice_d],
+          correctAnswer: getCorrectAnswerText(q),
+          topic: q.topic
+        }));
+        
+        // Store in localStorage
+        localStorage.setItem('assessmentQuizData', JSON.stringify(formattedQuizData));
+        console.log('Quiz data stored for assessment page:', formattedQuizData);
+      }
+      
+      // Continue with the upload progress simulation
+      simulateUploadProgress();
+    })
+    .catch(error => {
+      console.error('Error in API chain:', error);
+      // Continue with the upload progress simulation even if there's an error
+      simulateUploadProgress();
+    });
+  }
+
+  // Helper function to convert letter answer to the actual text answer
+  const getCorrectAnswerText = (question: QuizQuestion): string => {
+    switch(question.correct_answer.toLowerCase()) {
+      case 'a': return question.choice_a;
+      case 'b': return question.choice_b;
+      case 'c': return question.choice_c;
+      case 'd': return question.choice_d;
+      default: return '';
+    }
+  }
+
+  // Function to simulate upload progress
+  const simulateUploadProgress = () => {
     let progress = 0
     const interval = setInterval(() => {
       progress += 5

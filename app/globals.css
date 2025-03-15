@@ -92,3 +92,44 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Markdown content styling */
+.prose h3 {
+  color: hsl(var(--primary));
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose strong {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+
+.prose p {
+  margin-bottom: 0.75em;
+}
+
+.prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.prose blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.5);
+  padding-left: 1em;
+  font-style: italic;
+  margin: 1em 0;
+}
+
+.prose code {
+  background-color: hsl(var(--muted));
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}

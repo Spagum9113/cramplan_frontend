@@ -1,28 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
-// Sample quiz questions (in a real app, these would be generated based on uploaded materials)
-const quizQuestions = [
+// Define the quiz question interface
+interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  topic: string;
+}
+
+// Sample quiz questions as fallback
+const sampleQuizQuestions: QuizQuestion[] = [
   {
     id: 1,
     question: "What is the primary function of mitochondria in a cell?",
     options: ["Protein synthesis", "Energy production", "Cell division", "Waste removal"],
     correctAnswer: "Energy production",
+    topic: "Biology"
   },
   {
     id: 2,
     question: "Which of the following is a key principle of object-oriented programming?",
     options: ["Sequential execution", "Encapsulation", "Procedural design", "Linear processing"],
     correctAnswer: "Encapsulation",
+    topic: "Computer Science"
   },
   {
     id: 3,
@@ -34,12 +45,14 @@ const quizQuestions = [
       "Growth and Development Percentage",
     ],
     correctAnswer: "Gross Domestic Product",
+    topic: "Economics"
   },
   {
     id: 4,
     question: "Which of the following is NOT a type of chemical bond?",
     options: ["Ionic bond", "Covalent bond", "Hydrogen bond", "Magnetic bond"],
     correctAnswer: "Magnetic bond",
+    topic: "Chemistry"
   },
   {
     id: 5,
@@ -51,6 +64,7 @@ const quizQuestions = [
       "Exponents, Parentheses, Multiplication, Division, Addition, Subtraction",
     ],
     correctAnswer: "Parentheses, Exponents, Multiplication, Division, Addition, Subtraction",
+    topic: "Mathematics"
   },
 ]
 
@@ -59,6 +73,25 @@ export default function AssessmentPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [showResults, setShowResults] = useState(false)
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(sampleQuizQuestions)
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false)
+  
+  // Load quiz data from localStorage on component mount
+  useEffect(() => {
+    try {
+      const storedQuizData = localStorage.getItem('assessmentQuizData')
+      if (storedQuizData) {
+        const parsedData = JSON.parse(storedQuizData)
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+          console.log('Loaded quiz data from localStorage:', parsedData)
+          setQuizQuestions(parsedData)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading quiz data from localStorage:', error)
+      // Fall back to sample questions if there's an error
+    }
+  }, [])
 
   const handleAnswer = (answer: string) => {
     setAnswers({
@@ -100,12 +133,131 @@ export default function AssessmentPage() {
   }
 
   const handleFinish = () => {
-    router.push("/study-plan")
+    // Set loading state to true
+    setIsGeneratingPlan(true);
+    
+    // Calculate topic understanding scores based on quiz performance
+    const topicScores = quizQuestions.reduce((acc, question) => {
+      const topic = question.topic;
+      if (!acc[topic]) {
+        acc[topic] = { total: 0, correct: 0 };
+      }
+      
+      acc[topic].total += 1;
+      
+      // Check if the answer was correct
+      if (answers[question.id] === question.correctAnswer) {
+        acc[topic].correct += 1;
+      }
+      
+      return acc;
+    }, {} as Record<string, { total: number, correct: number }>);
+    
+    // Convert to percentage scores (0-100)
+    const normalizedScores: Record<string, number> = {};
+    Object.entries(topicScores).forEach(([topic, performance]) => {
+      normalizedScores[topic] = Math.round((performance.correct / performance.total) * 100);
+    });
+    
+    console.log('Topic understanding scores:', normalizedScores);
+    
+    // Get the subject from localStorage or use a default
+    const storedSubject = localStorage.getItem('studySubject') || "Biology";
+    
+    // Prepare request payload for curate-topics
+    const curateTopicsPayload = {
+      request: {
+        subject: storedSubject
+      },
+      understanding: {
+        scores: normalizedScores
+      }
+    };
+    
+    console.log('Making POST request to: http://0.0.0.0:8000/curate-topics');
+    console.log('Request body:', JSON.stringify(curateTopicsPayload, null, 2));
+    
+    // Call the curate-topics endpoint
+    fetch('http://0.0.0.0:8000/curate-topics', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(curateTopicsPayload),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok for curate-topics');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Topics curated successfully:', data);
+      
+      // Prepare payload for generate-content
+      const generateContentPayload = {
+        topics: data, // Assuming the curate-topics response has the expected format
+        understanding: {
+          scores: normalizedScores
+        }
+      };
+      
+      console.log('Making POST request to: http://0.0.0.0:8000/generate-content');
+      console.log('Request body:', JSON.stringify(generateContentPayload, null, 2));
+      
+      // Call the generate-content endpoint
+      return fetch('http://0.0.0.0:8000/generate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(generateContentPayload),
+      });
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok for generate-content');
+      }
+      return response.json();
+    })
+    .then(contentData => {
+      console.log('Content generated successfully:', contentData);
+      
+      // Store the generated content data for use in the study plan page
+      localStorage.setItem('studyPlanContent', JSON.stringify(contentData));
+      
+      // Navigate to the study plan page
+      router.push("/study-plan");
+    })
+    .catch(error => {
+      console.error('Error in API chain:', error);
+      // Set loading state back to false in case of error
+      setIsGeneratingPlan(false);
+      // Show an error message to the user
+      alert('There was an error generating your study plan. Please try again.');
+    });
   }
 
   if (showResults) {
     const score = calculateScore()
     const level = getLevel()
+    
+    // Group questions by topic to show topic-based performance
+    const topicPerformance = quizQuestions.reduce((acc, question) => {
+      const topic = question.topic;
+      if (!acc[topic]) {
+        acc[topic] = { total: 0, correct: 0 };
+      }
+      
+      acc[topic].total += 1;
+      
+      // Check if the answer was correct
+      if (answers[question.id] === question.correctAnswer) {
+        acc[topic].correct += 1;
+      }
+      
+      return acc;
+    }, {} as Record<string, { total: number, correct: number }>);
 
     return (
       <div className="container max-w-4xl py-12">
@@ -138,6 +290,25 @@ export default function AssessmentPage() {
                 </div>
               </div>
             </div>
+            
+            {/* Topic Performance Section */}
+            <div className="space-y-3">
+              <p className="font-medium">Topic Performance:</p>
+              <div className="space-y-2">
+                {Object.entries(topicPerformance).map(([topic, performance]) => (
+                  <div key={topic} className="p-3 border rounded-md">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="font-medium">{topic}</p>
+                      <p className="text-sm">{performance.correct}/{performance.total} correct</p>
+                    </div>
+                    <Progress 
+                      value={(performance.correct / performance.total) * 100} 
+                      className="h-2" 
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <div className="space-y-2">
               <p className="font-medium">What's Next?</p>
@@ -148,8 +319,19 @@ export default function AssessmentPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={handleFinish} className="w-full">
-              Generate My Study Plan
+            <Button 
+              onClick={handleFinish} 
+              className="w-full"
+              disabled={isGeneratingPlan}
+            >
+              {isGeneratingPlan ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Your Study Plan...
+                </>
+              ) : (
+                "Generate My Study Plan"
+              )}
             </Button>
           </CardFooter>
         </Card>
@@ -180,7 +362,10 @@ export default function AssessmentPage() {
         <CardContent>
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium mb-4">{question.question}</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-medium">{question.question}</h3>
+                <span className="text-sm px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{question.topic}</span>
+              </div>
               <RadioGroup value={answers[question.id] || ""} onValueChange={handleAnswer} className="space-y-3">
                 {question.options.map((option, index) => (
                   <div key={index} className="flex items-center space-x-2 rounded-md border p-3">
