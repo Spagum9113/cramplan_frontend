@@ -364,7 +364,6 @@ export default function AssessmentPage() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-medium">{question.question}</h3>
-                <span className="text-sm px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{question.topic}</span>
               </div>
               <RadioGroup value={answers[question.id] || ""} onValueChange={handleAnswer} className="space-y-3">
                 {question.options.map((option, index) => (
