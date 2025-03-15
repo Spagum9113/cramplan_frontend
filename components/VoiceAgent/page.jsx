@@ -38,17 +38,10 @@ export default function VoiceAgent() {
             >
                 <span
                     role="img"
-                    aria-label={showVoiceChat ? "close" : "microphone"}
-                    className={`text-2xl ${showVoiceChat ? 'hidden' : 'group-hover:hidden'}`}
+                    aria-label="microphone"
+                    className="text-2xl"
                 >
                     🎤
-                </span>
-                <span
-                    role="img"
-                    aria-label="close"
-                    className={`text-2xl ${showVoiceChat ? '' : 'hidden group-hover:block'}`}
-                >
-                    ✕
                 </span>
             </button>
 
