@@ -4,6 +4,8 @@ import "./globals.css"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+import VoiceAgent from "@/components/VoiceAgent/page"
+
 export const metadata: Metadata = {
   title: "CramPlan - Personalized Study Plans",
   description: "Create personalized study plans for your exams",
@@ -33,10 +35,25 @@ export default function RootLayout({
               <Button className="bg-blue-600 hover:bg-blue-700" asChild>
                 <Link href="/signup">Sign Up</Link>
               </Button>
+
             </nav>
+
+
           </div>
         </header>
         <main>{children}</main>
+
+
+
+
+
+
+        {/* ADD MY VOICE AGENT HERE */}
+        <VoiceAgent />
+
+
+
+
       </body>
     </html>
   )
