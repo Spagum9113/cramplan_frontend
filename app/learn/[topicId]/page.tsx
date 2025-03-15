@@ -10,6 +10,8 @@ import { ArrowLeft, MessageSquare, Mic, MicOff, Send, BookOpen, CheckCircle } fr
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import AIVoiceAgent from "@/components/AIVoiceAgent/page"
+
 
 // Sample topic data (in a real app, this would be fetched based on the topicId)
 const topicData = {
@@ -243,56 +245,31 @@ export default function LearnPage({ params }: { params: { topicId: string } }) {
 
 
 
-        {/* ADD MY AI VOICE AGENT HERE */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <TabsContent value="chat" className="mt-6">
-          <Card className="h-[600px] flex flex-col">
-            <CardHeader>
-              <CardTitle>Ask Your AI Tutor</CardTitle>
-              <CardDescription>Have questions about cell biology? Ask your AI tutor for help.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-4">
-                {chatMessages.map((message, index) => (
-                  <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[80%] rounded-lg p-3 ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                        }`}
-                    >
-                      {message.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter className="border-t p-4">
-              <div className="flex w-full items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={toggleRecording}
-                  className={isRecording ? "text-red-500" : ""}
-                >
-                  {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                </Button>
-                <Textarea
-                  placeholder="Type your question here..."
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  className="flex-1"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSendMessage()
-                    }
-                  }}
-                />
-                <Button size="icon" onClick={handleSendMessage}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
+          <AIVoiceAgent />
+
+
         </TabsContent>
+
+
+
+
 
 
 
@@ -414,4 +391,3 @@ export default function LearnPage({ params }: { params: { topicId: string } }) {
     </div>
   )
 }
-
