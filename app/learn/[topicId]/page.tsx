@@ -239,6 +239,11 @@ export default function LearnPage({ params }: { params: { topicId: string } }) {
           </Card>
         </TabsContent>
 
+
+
+
+
+        {/* ADD MY AI VOICE AGENT HERE */}
         <TabsContent value="chat" className="mt-6">
           <Card className="h-[600px] flex flex-col">
             <CardHeader>
@@ -250,9 +255,8 @@ export default function LearnPage({ params }: { params: { topicId: string } }) {
                 {chatMessages.map((message, index) => (
                   <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                        message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                      }`}
+                      className={`max-w-[80%] rounded-lg p-3 ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                        }`}
                     >
                       {message.content}
                     </div>
@@ -289,6 +293,15 @@ export default function LearnPage({ params }: { params: { topicId: string } }) {
             </CardFooter>
           </Card>
         </TabsContent>
+
+
+
+
+
+
+
+
+
 
         <TabsContent value="quiz" className="mt-6">
           <Card>
@@ -351,9 +364,8 @@ export default function LearnPage({ params }: { params: { topicId: string } }) {
                       return (
                         <div
                           key={index}
-                          className={`p-4 rounded-lg border ${
-                            isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-                          }`}
+                          className={`p-4 rounded-lg border ${isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                            }`}
                         >
                           <h4 className="font-medium">
                             {index + 1}. {question.question}
