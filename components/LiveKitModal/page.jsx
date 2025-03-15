@@ -20,7 +20,7 @@ const LiveKitModal = ({ setShowSupport }) => {
                     <div className="h-[350px]">
                         <LiveKitRoom
                             serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
-                            token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIwNjM4NDYsImlzcyI6IkFQSWNVM25TcW51eDlnZCIsIm5iZiI6MTc0MjA2Mjk0Niwic3ViIjoiciIsInZpZGVvIjp7ImNhblB1Ymxpc2giOnRydWUsImNhblB1Ymxpc2hEYXRhIjp0cnVlLCJjYW5TdWJzY3JpYmUiOnRydWUsInJvb20iOiJyIiwicm9vbUpvaW4iOnRydWV9fQ.4ACd3buPdLTfXyObyLJkWj6P2rw6EaTMZ9bLLkTwsGo" // Replace with a secure token in production
+                            token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIwNzI0MzcsImlzcyI6IkFQSWNVM25TcW51eDlnZCIsIm5iZiI6MTc0MjA2MzQzNywic3ViIjoiciIsInZpZGVvIjp7ImNhblB1Ymxpc2giOnRydWUsImNhblB1Ymxpc2hEYXRhIjp0cnVlLCJjYW5TdWJzY3JpYmUiOnRydWUsInJvb20iOiJyIiwicm9vbUpvaW4iOnRydWV9fQ.65NeVfBkAd849gCZHRdgNJFWOjx40X_XMt55H0uAw2A" // Replace with a secure token in production
                             connect={true}
                             video={false}
                             audio={true}
